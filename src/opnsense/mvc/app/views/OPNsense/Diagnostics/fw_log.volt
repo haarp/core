@@ -229,14 +229,19 @@
             });
             // read last digest (record hash) from top data row
             var last_digest = $("#grid-log > tbody > tr:first > td:first").text();
+            var last_limit = $("#limit").val();
             // fetch new log lines and add on top of grid-log
             ajaxGet('/api/diagnostics/firewall/log/', {'digest': last_digest, 'limit': max_rows}, function(data, status) {
                 if (status == 'error') {
                     // stop poller on failure
                     $("#auto_refresh").prop('checked', false);
+           	} else if (last_limit != $("#limit").val()) {
+// ignore
+console.log("ignore: " + data.length);
                 } else if (data !== undefined && data.length > 0) {
                     let record;
                     let trs = [];
+console.log("process: " + data.length);
                     while ((record = data.pop()) != null) {
                         if (record['__digest__'] != last_digest) {
                             var log_tr = $("<tr>");
@@ -500,6 +505,8 @@
         // reset log content on limit change, forces a reload
         $("#limit").change(function(){
             $('#grid-log > tbody').html("<tr></tr>");
+            var last_digest = $("#grid-log > tbody > tr:first > td:first").text();
+console.log("chaange!! " + $("#limit").val());
         });
 
         function poller() {
